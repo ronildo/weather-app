@@ -10,8 +10,12 @@
         v-model="getValue"
         :type="type"
         :placeholder="placeholder"
-        class="input is-large">
+        :class="['input', 'is-large', { 'is-danger': hasError }]">
     </div>
+
+    <p v-if="hasError" class="help is-danger">
+      {{ error }}
+    </p>
 
   </div>
 </template>
@@ -28,6 +32,12 @@ export default {
     },
 
     label: {
+      type: String,
+      required: false,
+      default: ''
+    },
+
+    error: {
       type: String,
       required: false,
       default: ''
@@ -58,6 +68,10 @@ export default {
       set (value) {
         this.$emit('input', value)
       }
+    },
+
+    hasError () {
+      return !!this.error
     }
   }
 }

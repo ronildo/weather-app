@@ -3,7 +3,12 @@
     <form novalidate @submit.prevent.stop="submitForm()">
       <div class="columns is-centered">
         <div class="column is-two-thirds">
-          <w-input :value="location" :placeholder="placeholder" @input="onLocation"/>
+          <w-input
+            ref="input"
+            :value="location"
+            :error="error"
+            :placeholder="placeholder"
+            @input="onLocation" />
         </div>
       </div>
 
@@ -19,6 +24,7 @@
 <script>
 import WInput from '@/components/Ui/Form/WInput'
 import WButton from '@/components/Ui/WButton/WButton'
+import { SPECIAL_CHARACTER } from '@/utils/Regex'
 
 export default {
   name: 'HomePage',
@@ -29,18 +35,44 @@ export default {
   },
 
   data: () => ({
+    input: null,
+    error: '',
     location: '',
     placeholder: 'Show me the weather in...'
   }),
 
+  watch: {
+    error (hasError) {
+      if (hasError) this.focusInput()
+    }
+  },
+
   methods: {
     onLocation (location) {
+      if (location) this.error = ''
       this.location = location
     },
 
     submitForm () {
-      console.log('submit-form')
-      this.location = ''
+      if (!this.location) {
+        this.error = 'Please enter a location!'
+        return
+      }
+
+      if (SPECIAL_CHARACTER.test(this.location)) {
+        this.error = 'Special character are not allowed!'
+        return
+      }
+
+      console.log('submit form')
+    },
+
+    focusInput () {
+      if (!this.input) {
+        this.input = this.$refs.input.$el.getElementsByTagName('input')[0]
+      }
+
+      this.input.focus()
     }
   }
 }
@@ -48,8 +80,6 @@ export default {
 
 <style lang="scss" scoped>
 .home-page {
-  // min-height: 100vh;
   margin: 10vh 0 0;
-  // border: 1px solid #FF0;
 }
 </style>
