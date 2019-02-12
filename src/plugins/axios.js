@@ -21,11 +21,6 @@ const VueAxiosPlugin = {}
 VueAxiosPlugin.install = (Vue) => {
   Vue.prototype.$API_GET = _axios.get
   Vue.prototype.$API_POST = _axios.post
-
-  // 4. add an instance method
-  Vue.prototype.$axios = function (methodOptions) {
-    // some logic ...
-  }
 }
 
 export default VueAxiosPlugin
