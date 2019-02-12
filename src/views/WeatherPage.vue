@@ -3,31 +3,38 @@
 
     <div class="columns is-centered">
       <div class="column is-10 has-text-centered">
-        <h1 class="title">Fort Lauderdale</h1>
-        <p class="subtitle">02/11/2019 08:00pm</p>
+        <h1 class="title">{{ weather.name }}</h1>
+        <p class="subtitle">{{ dateAndTime | formatDate }}</p>
       </div>
     </div>
 
     <div class="columns is-centered has-text-centered weather-description">
       <div class="column is-10">
-        <p class="is-size-5">Partly Cloud</p>
+        <p class="is-size-5 capitalize">{{ getDescription }}</p>
       </div>
     </div>
 
     <div class="columns is-centered has-text-centered is-mobile">
       <div class="column is-4">
         <div class="temperature-box">
-          <h2 class="title is-1">78</h2>
+          <h2 class="title is-1">
+            {{ getTemperature | temperatureConverter(unit) }}
+            <span class="is-size-4 capitalize">{{ getUnit }}</span>
+          </h2>
         </div>
       </div>
     </div>
 
     <div class="columns is-centered has-text-centered is-mobile">
       <div class="column is-2">
-        <span>↓ 73</span>
+        <span>↓ {{ getMinTemp | temperatureConverter(unit) }}</span>
       </div>
+
       <div class="column is-2">
-        <span><span class="rotate-180">↓</span> 79</span>
+        <span>
+          <span class="rotate-180">↓</span>
+          {{ getMaxTemp | temperatureConverter(unit) }}
+        </span>
       </div>
     </div>
 
@@ -37,11 +44,11 @@
           <dt>Precipitation</dt>
           <dd>20%</dd>
 
-          <dt>Hunidity</dt>
-          <dd>87%</dd>
+          <dt v-if="!!getHumidity">Humidity</dt>
+          <dd v-if="!!getHumidity">{{ getHumidity }}%</dd>
 
           <dt>Wind</dt>
-          <dd>11.0mph SE</dd>
+          <dd>{{ getWind }}mph {{ getWindDirection | degreesToCompass }}</dd>
       </dl>
       </div>
     </div>
@@ -50,8 +57,54 @@
 </template>
 
 <script>
+import weather from '@/mock/weather.json'
+
 export default {
-  name: 'WeatherPage'
+  name: 'WeatherPage',
+
+  data: () => ({
+    unit: 'fahrenheit',
+    weather: weather,
+    dateAndTime: new Date()
+  }),
+
+  computed: {
+    getUnit () {
+      return `°${this.unit.charAt(0)}`
+    },
+
+    getWind () {
+      return this.weather.wind.speed
+    },
+
+    getMinTemp () {
+      return this.weather.main.temp_min
+    },
+
+    getMaxTemp () {
+      return this.weather.main.temp_max
+    },
+
+    getDescription () {
+      return this.weather.weather[0].description
+    },
+
+    getTemperature () {
+      return this.weather.main.temp
+    },
+
+    getHumidity () {
+      return this.weather.main.humidity
+    },
+
+    getWindDirection () {
+      return this.weather.wind.deg
+    }
+  },
+
+  created () {
+
+  }
 }
 </script>
 
@@ -65,6 +118,10 @@ export default {
   .title {
     line-height: $height;
   }
+}
+
+.capitalize {
+  text-transform: capitalize;
 }
 
 .weather-description,
