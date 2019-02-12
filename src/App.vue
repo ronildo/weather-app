@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <router-view />
+    <section class="section">
+      <div class="container">
+        <router-view />
+      </div>
+    </section>
   </div>
 </template>
 
