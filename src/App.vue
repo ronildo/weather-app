@@ -29,8 +29,7 @@ html {
 }
 
 .app-container {
-  border: 1px solid #FF0;
-  padding: 3rem 0;
   min-height: 100vh;
+  padding: 3rem 0;
 }
 </style>

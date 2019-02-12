@@ -2,7 +2,7 @@
   <div class="home-page">
     <form novalidate @submit.prevent.stop="submitForm()">
       <div class="columns is-centered">
-        <div class="column is-two-thirds">
+        <div class="column is-10">
           <w-input
             ref="input"
             :value="location"
@@ -13,7 +13,7 @@
       </div>
 
       <div class="columns is-centered">
-        <div class="column is-two-thirds">
+        <div class="column is-10">
           <w-button type="submit">Submit</w-button>
         </div>
       </div>
@@ -65,6 +65,7 @@ export default {
       }
 
       console.log('submit form')
+      this.$router.push('weather')
     },
 
     focusInput () {
@@ -77,9 +78,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.home-page {
-  margin: 10vh 0 0;
-}
-</style>
