@@ -64,8 +64,8 @@ export default {
         return
       }
 
-      console.log('submit form')
-      this.$router.push('weather')
+      const { location } = this
+      this.$router.push({ name: 'weather', params: { location } })
     },
 
     focusInput () {

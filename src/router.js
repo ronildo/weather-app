@@ -14,8 +14,9 @@ export default new Router({
       )
     },
     {
-      path: '/weather',
+      path: '/weather/:location',
       name: 'weather',
+      props: true,
       component: () => import(
         /* webpackChunkName: "weather" */
         './views/WeatherPage.vue'
