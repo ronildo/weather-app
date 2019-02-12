@@ -1,70 +1,83 @@
 <template>
   <div class="weather-page">
 
-    <div class="columns is-centered">
-      <div class="column is-10 has-text-centered">
-        <h1 class="title">{{ weather.name }}</h1>
-        <p class="subtitle">{{ dateAndTime | formatDate }}</p>
-      </div>
-    </div>
+    <div v-if="!loading">
 
-    <div class="columns is-centered has-text-centered weather-description">
-      <div class="column is-10">
-        <p class="is-size-5 capitalize">{{ getDescription }}</p>
-      </div>
-    </div>
-
-    <div class="columns is-centered has-text-centered is-mobile">
-      <div class="column is-4">
-        <div class="temperature-box">
-          <h2 class="title is-1">
-            {{ getTemperature | temperatureConverter(unit) }}
-            <span class="is-size-4 capitalize">{{ getUnit }}</span>
-          </h2>
+      <div class="columns is-centered">
+        <div class="column is-10 has-text-centered">
+          <h1 class="title">{{ weather.name }}</h1>
+          <p class="subtitle">{{ dateAndTime | formatDate }}</p>
         </div>
       </div>
+
+      <div class="columns is-centered has-text-centered weather-description">
+        <div class="column is-10">
+          <p class="is-size-5 capitalize">{{ getDescription }}</p>
+        </div>
+      </div>
+
+      <div class="columns is-centered has-text-centered is-mobile">
+        <div class="column is-4">
+          <div class="temperature-box">
+            <h2 class="title is-1">
+              {{ getTemperature | temperatureConverter(unit) }}
+              <span class="is-size-4 capitalize">{{ getUnit }}</span>
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered has-text-centered is-mobile">
+        <div class="column is-2">
+          <span>↓ {{ getMinTemp | temperatureConverter(unit) }}</span>
+        </div>
+
+        <div class="column is-2">
+          <span>
+            <span class="rotate-180">↓</span>
+            {{ getMaxTemp | temperatureConverter(unit) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="columns is-centered has-text-centered weather-other-values">
+        <div class="column is-4 is-offset-6">
+          <dl>
+            <dt>Precipitation</dt>
+            <dd>20%</dd>
+
+            <dt v-if="!!getHumidity">Humidity</dt>
+            <dd v-if="!!getHumidity">{{ getHumidity }}%</dd>
+
+            <dt>Wind</dt>
+            <dd>{{ getWind }}mph {{ getWindDirection | degreesToCompass }}</dd>
+        </dl>
+        </div>
+      </div>
+
     </div>
 
-    <div class="columns is-centered has-text-centered is-mobile">
-      <div class="column is-2">
-        <span>↓ {{ getMinTemp | temperatureConverter(unit) }}</span>
-      </div>
-
-      <div class="column is-2">
-        <span>
-          <span class="rotate-180">↓</span>
-          {{ getMaxTemp | temperatureConverter(unit) }}
-        </span>
-      </div>
-    </div>
-
-    <div class="columns is-centered has-text-centered weather-other-values">
-      <div class="column is-4 is-offset-6">
-        <dl>
-          <dt>Precipitation</dt>
-          <dd>20%</dd>
-
-          <dt v-if="!!getHumidity">Humidity</dt>
-          <dd v-if="!!getHumidity">{{ getHumidity }}%</dd>
-
-          <dt>Wind</dt>
-          <dd>{{ getWind }}mph {{ getWindDirection | degreesToCompass }}</dd>
-      </dl>
-      </div>
+    <div v-else>
+      <w-loading :loading="loading" />
     </div>
 
   </div>
 </template>
 
 <script>
-import weather from '@/mock/weather.json'
+import WLoading from '@/components/Ui/WLoading/WLoading'
 
 export default {
   name: 'WeatherPage',
 
+  components: {
+    WLoading
+  },
+
   data: () => ({
     unit: 'fahrenheit',
-    weather: weather,
+    loading: true,
+    weather: null,
     dateAndTime: new Date()
   }),
 
@@ -103,7 +116,19 @@ export default {
   },
 
   created () {
+    console.log('this.$axios :', this.$axios)
+    console.log('this.$API_GET :', this.$API_GET)
+    this.loadData()
+  },
 
+  methods: {
+    async loadData () {
+      const url = 'weather?q=London'
+      const { data } = await this.$API_GET(url)
+      console.log('data :', data)
+      this.weather = data
+      this.loading = false
+    }
   }
 }
 </script>
@@ -140,13 +165,13 @@ dl {
     display: inline-block;
     height: 2.5rem;
     line-height: 2.5;
-    width: 60%;
+    width: 50%;
     text-align: left;
   }
 
   dd {
     display: inline-block;
-    width: 40%;
+    width: 50%;
     text-align: right;
   }
 }
