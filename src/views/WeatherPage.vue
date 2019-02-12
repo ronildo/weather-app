@@ -5,7 +5,7 @@
 
       <div class="columns is-centered">
         <div class="column is-10 has-text-centered">
-          <h1 class="title">{{ weather.name }}</h1>
+          <h1 class="title">{{ pageData.name }}</h1>
           <p class="subtitle">{{ dateAndTime | formatDate }}</p>
         </div>
       </div>
@@ -17,7 +17,7 @@
       </div>
 
       <div class="columns is-centered has-text-centered is-mobile">
-        <div class="column is-4">
+        <div class="column is-6">
           <div class="temperature-box">
             <h2 class="title is-1">
               {{ getTemperature | temperatureConverter(unit) }}
@@ -28,11 +28,11 @@
       </div>
 
       <div class="columns is-centered has-text-centered is-mobile">
-        <div class="column is-2">
+        <div class="column is-3">
           <span>↓ {{ getMinTemp | temperatureConverter(unit) }}</span>
         </div>
 
-        <div class="column is-2">
+        <div class="column is-3">
           <span>
             <span class="rotate-180">↓</span>
             {{ getMaxTemp | temperatureConverter(unit) }}
@@ -41,10 +41,10 @@
       </div>
 
       <div class="columns is-centered has-text-centered weather-other-values">
-        <div class="column is-4 is-offset-6">
+        <div class="column is-6">
           <dl>
             <dt>Precipitation</dt>
-            <dd>20%</dd>
+            <dd>{{ getPrecipitation }}</dd>
 
             <dt v-if="!!getHumidity">Humidity</dt>
             <dd v-if="!!getHumidity">{{ getHumidity }}%</dd>
@@ -74,10 +74,17 @@ export default {
     WLoading
   },
 
+  props: {
+    location: {
+      type: String,
+      required: true
+    }
+  },
+
   data: () => ({
     unit: 'fahrenheit',
     loading: true,
-    weather: null,
+    pageData: null,
     dateAndTime: new Date()
   }),
 
@@ -87,46 +94,49 @@ export default {
     },
 
     getWind () {
-      return this.weather.wind.speed
+      return Math.round(this.pageData.wind.speed * 2.237)
     },
 
     getMinTemp () {
-      return this.weather.main.temp_min
+      return this.pageData.main.temp_min
     },
 
     getMaxTemp () {
-      return this.weather.main.temp_max
-    },
-
-    getDescription () {
-      return this.weather.weather[0].description
-    },
-
-    getTemperature () {
-      return this.weather.main.temp
+      return this.pageData.main.temp_max
     },
 
     getHumidity () {
-      return this.weather.main.humidity
+      return this.pageData.main.humidity
+    },
+
+    getDescription () {
+      return this.pageData.weather[0].description
+    },
+
+    getTemperature () {
+      return this.pageData.main.temp
+    },
+
+    getPrecipitation () {
+      const { rain } = this.pageData
+      return (rain && rain['3h']) ? `${rain['3h']}mm` : '-'
     },
 
     getWindDirection () {
-      return this.weather.wind.deg
+      return this.pageData.wind.deg
     }
   },
 
   created () {
-    console.log('this.$axios :', this.$axios)
-    console.log('this.$API_GET :', this.$API_GET)
     this.loadData()
   },
 
   methods: {
     async loadData () {
-      const url = 'weather?q=London'
+      const url = `weather?q=${this.location}`
       const { data } = await this.$API_GET(url)
       console.log('data :', data)
-      this.weather = data
+      this.pageData = data
       this.loading = false
     }
   }
@@ -137,7 +147,8 @@ export default {
 .temperature-box {
   $height: 120px;
 
-  border: 1px solid #CCC;
+  background: rgba(#FFF, 0.2);
+  border: 1px solid rgba(#FFF, 0.8);
   height: $height;
 
   .title {
