@@ -9,10 +9,12 @@ import 'bulma/css/bulma.css'
 import VueAxiosPlugin from '@/plugins/axios'
 
 // Filters
+import { FromUnix } from '@/filters/FromUnix'
 import { FormatDate } from '@/filters/FormatDate'
 import { DegreesToCompass } from '@/filters/DegreesToCompass'
 import { TemperatureConverter } from '@/filters/TemperatureConverter'
 
+Vue.filter('fromUnix', FromUnix)
 Vue.filter('formatDate', FormatDate)
 Vue.filter('degreesToCompass', DegreesToCompass)
 Vue.filter('TemperatureConverter', TemperatureConverter)

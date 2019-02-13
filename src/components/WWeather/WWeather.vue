@@ -65,6 +65,12 @@
 
           <dt>Wind</dt>
           <dd>{{ getWind }}mph {{ getWindDirection | degreesToCompass }}</dd>
+
+          <dt>Sunrise</dt>
+          <dd>{{ getSunrise | fromUnix }}</dd>
+
+          <dt>Sunset</dt>
+          <dd>{{ getSunset | fromUnix }}</dd>
       </dl>
       </div>
     </div>
@@ -119,6 +125,14 @@ export default {
 
     getMaxTemp () {
       return this.weather.main.temp_max
+    },
+
+    getSunset () {
+      return this.weather.sys.sunset
+    },
+
+    getSunrise () {
+      return this.weather.sys.sunrise
     },
 
     getHumidity () {
