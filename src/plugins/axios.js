@@ -10,7 +10,6 @@ const _axios = axios.create(config)
 
 _axios.interceptors.request.use(config => {
   let { url } = config
-  console.log('url :', url)
   config.url = `${url}&APPID=${API_KEY}`
 
   return config
