@@ -1,11 +1,20 @@
 <template>
   <div class="weather-page">
 
+    <transition name="slide" mode="out-in">
+      <w-search
+        class="search-box"
+        v-if="showSearch"
+        :size="6"
+        :location="location"
+        @on-location-change="toggleSearch" />
+    </transition>
+
     <transition name="fade" mode="out-in">
       <div key="page-data" v-if="!loading">
 
         <div class="columns is-mobile">
-          <div class="column is-offset-3 is-6">
+          <div class="column is-offset-3 is-4">
             <div class="buttons has-addons">
 
               <div
@@ -16,6 +25,13 @@
                 @click="onSelectDay(item)" />
 
             </div>
+          </div>
+
+          <div class="column is-1">
+            <button
+              class="button"
+              @click="toggleSearch()"
+              v-text="'Change City'" />
           </div>
         </div>
 
@@ -31,7 +47,21 @@
       </div>
 
       <div key="loader" v-else>
-        <w-loading :loading="loading" />
+        <w-loading
+          v-if="!pageError"
+          :loading="loading" />
+      </div>
+    </transition>
+
+    <transition name="slide">
+      <div
+        v-if="pageError"
+        class="columns is-centered is-mobile">
+        <div class="column  is-4">
+          <w-notification
+            content="Invalid location!"
+            @on-close="goBack" />
+        </div>
       </div>
     </transition>
 
@@ -39,15 +69,19 @@
 </template>
 
 <script>
-import WLoading from '@/components/Ui/WLoading/WLoading'
+import WSearch from '@/components/WSearch/WSearch'
 import WWeather from '@/components/WWeather/WWeather'
+import WLoading from '@/components/Ui/WLoading/WLoading'
+import WNotification from '@/components/Ui/WNotification/WNotification'
 
 export default {
   name: 'WeatherPage',
 
   components: {
+    WSearch,
+    WWeather,
     WLoading,
-    WWeather
+    WNotification
   },
 
   props: {
@@ -62,6 +96,8 @@ export default {
     unit: 'fahrenheit',
     loading: true,
     pageData: {},
+    pageError: false,
+    showSearch: false,
     hasArrows: false,
     fiveDayData: null,
     fiveDayIndex: 0,
@@ -97,22 +133,40 @@ export default {
     this.loadTodayData()
   },
 
+  watch: {
+    location (newLocation) {
+      if (this.selectedDay === 'Today') {
+        this.loadTodayData()
+      } else {
+        this.load5Days()
+      }
+    }
+  },
+
   methods: {
     async loadTodayData () {
-      const { data } = await this.$API_GET(this.getUrl)
-      this.pageData = data
-      this.city = this.pageData.name
-      this.loading = false
-      this.fiveDayIndex = 0
+      try {
+        const { data } = await this.$API_GET(this.getUrl)
+        this.pageData = data
+        this.city = this.pageData.name
+        this.loading = false
+        this.fiveDayIndex = 0
+      } catch (error) {
+        this.pageError = true
+      }
     },
 
     async load5Days () {
-      const { data } = await this.$API_GET(this.getUrl)
-      this.fiveDayData = this.getFiveDaysForecast(data)
-      this.city = data.city.name
-      this.defineFiveDayData()
-      this.loading = false
-      this.hasArrows = true
+      try {
+        const { data } = await this.$API_GET(this.getUrl)
+        this.fiveDayData = this.getFiveDaysForecast(data)
+        this.city = data.city.name
+        this.defineFiveDayData()
+        this.loading = false
+        this.hasArrows = true
+      } catch (error) {
+        this.pageError = true
+      }
     },
 
     getFiveDaysForecast ({ list }) {
@@ -166,7 +220,22 @@ export default {
       if (this.fiveDayIndex === 0) return
       this.fiveDayIndex--
       this.defineFiveDayData()
+    },
+
+    goBack () {
+      this.$router.push('/')
+    },
+
+    toggleSearch () {
+      this.pageError = false
+      this.showSearch = !this.showSearch
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.search-box {
+  margin: 0 0 40px 0;
+}
+</style>
