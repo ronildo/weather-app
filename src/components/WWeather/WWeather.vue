@@ -78,6 +78,7 @@
 </template>
 
 <script>
+// This component basically holds date it has no methods or logic involved
 export default {
   name: 'WWeather',
 

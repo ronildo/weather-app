@@ -1,3 +1,4 @@
+// This filter transfor a degree to a compass
 export const DegreesToCompass = (degrees) => {
   var val = Math.floor((degrees / 22.5) + 0.5)
   var arr = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']

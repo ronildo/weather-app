@@ -8,7 +8,9 @@ export default new Router({
     {
       path: '/',
       name: 'home',
+      // split component into chunks
       component: () => import(
+        // This comment below gives the chunk a name
         /* webpackChunkName: "home" */
         './views/HomePage.vue'
       )
@@ -17,7 +19,9 @@ export default new Router({
       path: '/weather/:location',
       name: 'weather',
       props: true,
+      // split component into chunks
       component: () => import(
+        // This comment below gives the chunk a name
         /* webpackChunkName: "weather" */
         './views/WeatherPage.vue'
       )
