@@ -1,77 +1,53 @@
 <template>
   <div class="weather-page">
 
-    <div v-if="!loading">
+    <transition name="fade" mode="out-in">
+      <div key="page-data" v-if="!loading">
 
-      <div class="columns is-centered">
-        <div class="column is-10 has-text-centered">
-          <h1 class="title">{{ pageData.name }}</h1>
-          <p class="subtitle">{{ dateAndTime | formatDate }}</p>
-        </div>
-      </div>
+        <div class="columns is-mobile">
+          <div class="column is-offset-3 is-6">
+            <div class="buttons has-addons">
 
-      <div class="columns is-centered has-text-centered weather-description">
-        <div class="column is-10">
-          <p class="is-size-5 capitalize">{{ getDescription }}</p>
-        </div>
-      </div>
+              <div
+                v-for="(item) in daysOptions"
+                :key="`option-${item}`"
+                :class="['button', { 'is-selected is-info': item === selectedDay }]"
+                v-text="item"
+                @click="onSelectDay(item)" />
 
-      <div class="columns is-centered has-text-centered is-mobile">
-        <div class="column is-6">
-          <div class="temperature-box">
-            <h2 class="title is-1">
-              {{ getTemperature | temperatureConverter(unit) }}
-              <span class="is-size-4 capitalize">{{ getUnit }}</span>
-            </h2>
+            </div>
           </div>
         </div>
+
+        <w-weather
+          :city="city"
+          :unit="unit"
+          :weather="pageData"
+          :has-arrows="hasArrows"
+          :date-and-time="getDateAndtime"
+          @on-next-day="onNextDay"
+          @on-prev-day="onPrevDay" />
+
       </div>
 
-      <div class="columns is-centered has-text-centered is-mobile">
-        <div class="column is-3">
-          <span>↓ {{ getMinTemp | temperatureConverter(unit) }}</span>
-        </div>
-
-        <div class="column is-3">
-          <span>
-            <span class="rotate-180">↓</span>
-            {{ getMaxTemp | temperatureConverter(unit) }}
-          </span>
-        </div>
+      <div key="loader" v-else>
+        <w-loading :loading="loading" />
       </div>
-
-      <div class="columns is-centered has-text-centered weather-other-values">
-        <div class="column is-6">
-          <dl>
-            <dt>Precipitation</dt>
-            <dd>{{ getPrecipitation }}</dd>
-
-            <dt v-if="!!getHumidity">Humidity</dt>
-            <dd v-if="!!getHumidity">{{ getHumidity }}%</dd>
-
-            <dt>Wind</dt>
-            <dd>{{ getWind }}mph {{ getWindDirection | degreesToCompass }}</dd>
-        </dl>
-        </div>
-      </div>
-
-    </div>
-
-    <div v-else>
-      <w-loading :loading="loading" />
-    </div>
+    </transition>
 
   </div>
 </template>
 
 <script>
 import WLoading from '@/components/Ui/WLoading/WLoading'
+import WWeather from '@/components/WWeather/WWeather'
 
 export default {
   name: 'WeatherPage',
 
   components: {
-    WLoading
+    WLoading,
+    WWeather
   },
 
   props: {
@@ -82,108 +58,115 @@ export default {
   },
 
   data: () => ({
+    city: '',
     unit: 'fahrenheit',
     loading: true,
-    pageData: null,
-    dateAndTime: new Date()
+    pageData: {},
+    hasArrows: false,
+    fiveDayData: null,
+    fiveDayIndex: 0,
+    fiveDaySelectedDay: null,
+    selectedDay: 'Today',
+    daysOptions: [
+      'Today',
+      '5 Days'
+    ]
   }),
 
   computed: {
-    getUnit () {
-      return `°${this.unit.charAt(0)}`
+    getUrl () {
+      const method = (this.selectedDay === 'Today') ? 'weather' : 'forecast'
+      return `${method}?q=${this.location}`
     },
 
-    getWind () {
-      return Math.round(this.pageData.wind.speed * 2.237)
+    getToday () {
+      const today = new Date().toISOString()
+      const day = today.split('-')[2].substring(0, 2)
+      const month = today.split('-')[1]
+      const year = today.split('-')[0]
+
+      return `${year}-${month}-${day}`
     },
 
-    getMinTemp () {
-      return this.pageData.main.temp_min
-    },
-
-    getMaxTemp () {
-      return this.pageData.main.temp_max
-    },
-
-    getHumidity () {
-      return this.pageData.main.humidity
-    },
-
-    getDescription () {
-      return this.pageData.weather[0].description
-    },
-
-    getTemperature () {
-      return this.pageData.main.temp
-    },
-
-    getPrecipitation () {
-      const { rain } = this.pageData
-      return (rain && rain['3h']) ? `${rain['3h']}mm` : '-'
-    },
-
-    getWindDirection () {
-      return this.pageData.wind.deg
+    getDateAndtime () {
+      return this.pageData.dt_txt || new Date()
     }
   },
 
   created () {
-    this.loadData()
+    this.loadTodayData()
   },
 
   methods: {
-    async loadData () {
-      const url = `weather?q=${this.location}`
-      const { data } = await this.$API_GET(url)
-      console.log('data :', data)
+    async loadTodayData () {
+      const { data } = await this.$API_GET(this.getUrl)
       this.pageData = data
+      this.city = this.pageData.name
       this.loading = false
+      this.fiveDayIndex = 0
+    },
+
+    async load5Days () {
+      const { data } = await this.$API_GET(this.getUrl)
+      this.fiveDayData = this.getFiveDaysForecast(data)
+      this.city = data.city.name
+      this.defineFiveDayData()
+      this.loading = false
+      this.hasArrows = true
+    },
+
+    getFiveDaysForecast ({ list }) {
+      const today = this.getToday
+      let lastSelected = {}
+      return list.filter(forecast => {
+        if (
+          lastSelected.dt_txt !== forecast.dt_txt &&
+          forecast.dt_txt.includes('12:00:00') &&
+          !forecast.dt_txt.includes(today)
+        ) {
+          lastSelected = forecast
+          return forecast
+        }
+      })
+    },
+
+    onSelectDay (item) {
+      this.loading = true
+      this.pageData = {}
+      this.selectedDay = item
+
+      if (item !== 'Today') {
+        this.load5Days()
+      } else {
+        this.loadTodayData()
+      }
+    },
+
+    getNextDayForecast () {
+      let forecast
+      if (!this.fiveDaySelectedDay) {
+        forecast = this.fiveDayData.list[0]
+        this.fiveDaySelectedDay = forecast.dt_txt
+      }
+
+      return forecast
+    },
+
+    defineFiveDayData () {
+      this.pageData = this.fiveDayData[this.fiveDayIndex]
+    },
+
+    onNextDay () {
+      if (this.fiveDayIndex === this.fiveDayData.length - 1) return
+      this.fiveDayIndex++
+      this.defineFiveDayData()
+    },
+
+    onPrevDay () {
+      if (this.fiveDayIndex === 0) return
+      this.fiveDayIndex--
+      this.defineFiveDayData()
     }
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.temperature-box {
-  $height: 120px;
-
-  background: rgba(#FFF, 0.2);
-  border: 1px solid rgba(#FFF, 0.8);
-  height: $height;
-
-  .title {
-    line-height: $height;
-  }
-}
-
-.capitalize {
-  text-transform: capitalize;
-}
-
-.weather-description,
-.weather-other-values {
-  margin: 5rem 0 0 0;
-}
-
-.rotate-180 {
-  display: inline-block;
-  transform: rotate(180deg)
-}
-
-dl {
-  dt, dd {
-    border-bottom: 1px solid #CCC;
-    display: inline-block;
-    height: 2.5rem;
-    line-height: 2.5;
-    width: 50%;
-    text-align: left;
-  }
-
-  dd {
-    display: inline-block;
-    width: 50%;
-    text-align: right;
-  }
-}
-</style>

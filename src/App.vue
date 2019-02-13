@@ -4,7 +4,7 @@
       <div class="container">
 
         <div class="app-container">
-          <transition name="fade">
+          <transition name="fade" mode="out-in">
             <router-view />
           </transition>
         </div>
