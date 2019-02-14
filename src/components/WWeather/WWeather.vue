@@ -54,8 +54,8 @@
       </div>
     </div>
 
-    <div class="columns is-centered has-text-centered weather-other-values">
-      <div class="column is-6">
+    <div class="columns is-centered weather-other-values">
+      <div class="column is-12">
         <dl>
           <dt>Precipitation</dt>
           <dd>{{ getPrecipitation }}</dd>
@@ -212,13 +212,13 @@ dl {
     display: inline-block;
     height: 2.5rem;
     line-height: 2.5;
-    width: 50%;
+    width: 40%;
     text-align: left;
   }
 
   dd {
     display: inline-block;
-    width: 50%;
+    width: 60%;
     text-align: right;
   }
 }

@@ -13,8 +13,8 @@
     <transition name="fade" mode="out-in">
       <div key="page-data" v-if="!loading">
 
-        <div class="columns is-mobile">
-          <div class="column is-offset-3 is-4">
+        <div class="columns is-mobile margin-bottom-30 padding">
+          <div class="column is-paddingless is-6">
             <div class="buttons has-addons">
 
               <div
@@ -27,11 +27,13 @@
             </div>
           </div>
 
-          <div class="column is-1">
-            <button
-              class="button"
-              @click="toggleSearch()"
-              v-text="'Change City'" />
+          <div class="column is-paddingless is-6">
+            <div class="is-pulled-right">
+              <button
+                class="button"
+                @click="toggleSearch()"
+                v-text="'Change City'" />
+            </div>
           </div>
         </div>
 
@@ -258,5 +260,16 @@ export default {
 <style lang="scss" scoped>
 .search-box {
   margin: 0 0 40px 0;
+}
+
+.margin-bottom-30 {
+  margin-bottom: 30px;
+}
+
+.padding {
+  $padding: 25px;
+
+  padding-left: $padding;
+  padding-right: $padding;
 }
 </style>
